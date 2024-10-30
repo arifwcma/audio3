@@ -15,9 +15,12 @@ os.makedirs(stage3_folder, exist_ok=True)
 
 
 
-def remove_silence(audio_tensor, threshold=0.01):
+def remove_silence(audio_tensor, threshold=0.97):
     audio_np = audio_tensor.numpy()
     energy = np.sum(np.abs(audio_np), axis=0)
+    min_energy = np.min(energy)
+    max_energy = np.max(energy)
+    energy = (energy - min_energy) / (max_energy - min_energy)
     non_silent_indices = np.where(energy > threshold)[0]
 
     if len(non_silent_indices) == 0:
@@ -37,5 +40,6 @@ for filename in os.listdir(input_folder):
             outputfile = filename.split(" ")[-1]
             output_path = os.path.join(stage1_folder, outputfile)
             torchaudio.save(output_path, trimmed_audio, sample_rate)
+    break
 
 print("Audio processing complete. Refined files are saved in the 'data' folder.")
