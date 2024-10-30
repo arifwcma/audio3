@@ -17,9 +17,11 @@ def train():
 
     for epoch in range(10):
         for inputs, labels in dataloader:
+            inputs = inputs.squeeze(1)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+            print(loss.item())
             loss.backward()
             optimizer.step()
 

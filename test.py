@@ -16,6 +16,7 @@ def test():
 
     for idx in range(len(dataset)):
         inputs, label = dataset[idx]
+        inputs = inputs.squeeze(1)
         with torch.no_grad():
             output = model(inputs)
             predicted = torch.argmax(output, dim=1).item()
