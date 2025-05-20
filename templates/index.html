@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Classifier</title>
+</head>
+<body>
+    <h2>Upload an Audio File</h2>
+    <input type="file" id="fileInput" accept=".mp3" />
+    <button onclick="uploadFile()">Predict</button>
+    <p id="result"></p>
+
+        <h2>Frog Species Labels</h2>
+    <div id="labels">
+        <p>1. Bibron's Toadlet &gt; Pseudophryne blbronll</p>
+        <p>2. Brown Tree Frog &gt; Litoria ewingli</p>
+        <p>3. Common Eastern Froglet &gt; Crinia signifera</p>
+        <p>4. Common Spadefoot/Painted Burrowing Frog &gt; Neobatrachus sudelli</p>
+        <p>5. Eastern Banjo/Pobblebonk Frog &gt; Limnodynastes dumerilii</p>
+        <p>6. Growling Grass Frog/Southern Bell Frog &gt; Litoria raniformis</p>
+        <p>7. Mallee Spadefoot Toad/Painted Frog &gt; Neobatrachus pictus</p>
+        <p>8. Plains Froglet &gt; Crinia parinsignifera</p>
+        <p>9. Southern Toadlet &gt; Pseudophryne semimarmorata</p>
+        <p>10. Spotted Marsh/Grass Frog &gt; Limnodynastes tasmaniensis</p>
+        <p>11. Striped Marsh Frog &gt; Limnodynastes peronii</p>
+        <p>12. Victorian Smooth Froglet &gt; Geocrinia victoriana</p>
+        <p>13. Southern Smooth Froglet/Tasmanian Smooth Froglet &gt; Geocrinia laevis</p>
+        <p>14. Peron's Tree Frog &gt; Litoria peronii</p>
+    </div>
+
+    
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('result').innerText = 'Prediction: ' + data.prediction;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('result').innerText = 'Error during prediction.';
+            });
+        }
+    </script>
+</body>
+</html>

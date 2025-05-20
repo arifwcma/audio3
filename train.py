@@ -25,7 +25,7 @@ def train():
             loss.backward()
             optimizer.step()
 
-    torch.save(model.state_dict(), 'frog_net.pth')
+    torch.save(model.state_dict(), 'model_weights/frog_net.pth')
 
 
 if __name__ == "__main__":

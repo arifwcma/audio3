@@ -11,7 +11,7 @@ def test():
     dataloader = DataLoader(dataset, batch_size=32, shuffle=False)
 
     model = FrogNet()
-    model.load_state_dict(torch.load('frog_net.pth', weights_only=True))
+    model.load_state_dict(torch.load('model_weights/frog_net.pth', weights_only=True))
     model.eval()
 
     correct = 0
