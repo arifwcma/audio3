@@ -16,13 +16,17 @@ def train():
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     for epoch in range(10):
-        for inputs, labels in dataloader:
+        for batch_index,(inputs, labels) in enumerate(dataloader):
             inputs = inputs.squeeze(1)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-            print(loss.item())
+            print(f"Epoch {epoch} - batch {batch_index} - loss {loss.item()}")
             loss.backward()
             optimizer.step()
 
     torch.save(model.state_dict(), 'frog_net.pth')
+
+
+if __name__ == "__main__":
+    train()
