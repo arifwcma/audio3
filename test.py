@@ -79,5 +79,13 @@ def test():
     plt.tight_layout()
     plt.savefig("results1.png")
 
+    class_7_count = preds.count(6)
+    total = len(preds)
+    percentage = round(100 * class_7_count / total, 2)
+    print(f"\nPredicted class 7 for {class_7_count} out of {total} samples ({percentage}%)")
+
+
+
+
 if __name__ == '__main__':
     test()
