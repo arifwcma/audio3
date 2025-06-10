@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from audio_dataset import AudioDataset
 from frog_net import VGGishClassifier
+from audio_dataset import AudioDataset
 
 def train():
     dataset = AudioDataset('data/stage3/train')
@@ -14,7 +14,7 @@ def train():
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     model.train()
-    for epoch in range(10):
+    for epoch in range(20):
         for i, (inputs, labels) in enumerate(dataloader):
             optimizer.zero_grad()
             outputs = model(inputs)
