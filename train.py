@@ -16,7 +16,6 @@ def train():
     model.train()
     for epoch in range(10):
         for i, (inputs, labels) in enumerate(dataloader):
-            print(inputs.shape)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
