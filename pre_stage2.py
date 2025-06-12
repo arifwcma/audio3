@@ -9,7 +9,7 @@ stage1_folder = 'data/stage2'
 
 def preproc_a_file(input_file, output_folder):
     os.makedirs(output_folder, exist_ok=True)
-    y, sr = librosa.load(input_file)
+    y, sr = librosa.load(input_file, sr=16000)
 
     duration = 100 / 1000
     num_samples = int(duration * sr)

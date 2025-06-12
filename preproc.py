@@ -8,7 +8,7 @@ from audio_dataset import AudioDataset
 
 
 def preprocess_audio(file_path):
-    y, sr = librosa.load(file_path)
+    y, sr = librosa.load(file_path, sr=16000)
     non_silent_indices = librosa.effects.split(y, top_db=20)
     trimmed_audio = np.concatenate([y[start:end] for start, end in non_silent_indices])
 
@@ -26,7 +26,8 @@ def preprocess_audio(file_path):
 
     processed = []
     for segment in segments:
-        mel = AudioDataset.preproc_audio_data(segment, sr)
+        segment = torch.tensor(segment, dtype=torch.float32).unsqueeze(0)
+        mel = AudioDataset.preproc_audio_data(segment)
         processed.append(mel.unsqueeze(0))
 
     if len(processed) == 0:

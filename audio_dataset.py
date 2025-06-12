@@ -1,7 +1,9 @@
 import os
 import torch
-import torchaudio
+import numpy as np
+import librosa
 from torch.utils.data import Dataset
+import torchaudio
 
 class AudioDataset(Dataset):
     target_sr = 16000
@@ -14,7 +16,7 @@ class AudioDataset(Dataset):
         f_min=125,
         f_max=7500
     )
-    
+
     def __init__(self, folder):
         self.files = []
         self.labels = []
@@ -26,7 +28,6 @@ class AudioDataset(Dataset):
                         self.files.append(os.path.join(class_folder, file))
                         self.labels.append(int(label) - 1)
 
-
     def __len__(self):
         return len(self.files)
 
@@ -37,17 +38,12 @@ class AudioDataset(Dataset):
 
     @staticmethod
     def preproc_file(file):
-        audio, sr = torchaudio.load(file)
-        return AudioDataset.preproc_audio_data(audio, sr)
-
+        y, sr = librosa.load(file, sr=AudioDataset.target_sr)
+        audio = torch.tensor(y, dtype=torch.float32).unsqueeze(0)
+        return AudioDataset.preproc_audio_data(audio)
 
     @staticmethod
-    def preproc_audio_data(audio, sr):
-        if sr != AudioDataset.target_sr:
-            resample = torchaudio.transforms.Resample(sr, AudioDataset.target_sr)
-            audio = resample(audio)
-        audio = audio.mean(dim=0, keepdim=True)
-
+    def preproc_audio_data(audio):
         if audio.shape[1] < AudioDataset.min_samples:
             pad = AudioDataset.min_samples - audio.shape[1]
             audio = torch.nn.functional.pad(audio, (0, pad))
@@ -63,5 +59,4 @@ class AudioDataset(Dataset):
         else:
             log_mel = log_mel[:, :, :96]
 
-        log_mel = log_mel.transpose(1, 2)
-        return log_mel
+        return log_mel.transpose(1, 2)  # shape: [1, 96, 64]

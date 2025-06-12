@@ -8,7 +8,7 @@ stage1_folder = 'data/stage1'
 
 
 def preproc_a_file(input_file, output_file):
-    y, sr = librosa.load(input_file)
+    y, sr = librosa.load(input_file, sr=16000)
     non_silent_indices = librosa.effects.split(y, top_db=20)
     trimmed_audio = np.concatenate([y[start:end] for start, end in non_silent_indices])
     sf.write(output_file, trimmed_audio, sr)
