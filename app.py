@@ -95,9 +95,15 @@ def predict():
         outputs = model(inputs)
         predictions = torch.argmax(outputs, dim=1).tolist()
         counter = Counter(predictions)
+
+        print("Segment-level predictions:")
+        for class_id, count in counter.most_common():
+            print(f"  Class {class_id + 1}: {count} segments")
+
         majority_class, count = counter.most_common(1)[0]
         confidence = round(100 * count / len(predictions))
         predicted_label = f"{labels[majority_class]} ({confidence}% confidence)"
+        print(f"\nFinal Prediction: {predicted_label}")
 
     return jsonify({'prediction': predicted_label})
 
