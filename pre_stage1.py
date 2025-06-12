@@ -14,6 +14,7 @@ def preproc_a_file(input_file, output_file):
     sf.write(output_file, trimmed_audio, sr)
 
 def preproc():
+    os.makedirs(stage1_folder, exist_ok=True)
     for filename in os.listdir(input_folder):
         if filename.endswith('.mp3'):
             file_path = os.path.join(input_folder, filename)
