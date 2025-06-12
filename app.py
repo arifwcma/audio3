@@ -3,6 +3,7 @@ from flask import Flask, request, render_template, jsonify
 from preproc import preprocess_audio
 from frog_net import VGGishClassifier
 from collections import Counter
+from audio_dataset import AudioDataset
 
 app = Flask(__name__)
 model = VGGishClassifier(num_classes=14)
@@ -39,7 +40,11 @@ def predict():
     file_path = 'temp.mp3'
     file.save(file_path)
 
-    inputs = preprocess_audio(file_path)  # shape: [N, 1, 96, 64]
+    inputs = preprocess_audio(file_path)
+
+    if inputs is None:
+        return jsonify({'prediction': "Audio file error"})
+
     with torch.no_grad():
         outputs = model(inputs)
         predictions = torch.argmax(outputs, dim=1).tolist()
@@ -55,6 +60,30 @@ def predict():
 
         predicted_label = f"{labels[majority_class]} ({confidence}% confidence)"
 
+
+    return jsonify({'prediction': predicted_label})
+
+@app.route('/single')
+def single():
+    return render_template('index2.html')
+
+@app.route('/predict_single', methods=['POST'])
+def predict_single():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'})
+
+    file = request.files['file']
+    file_path = 'temp.wav'
+    file.save(file_path)
+
+    log_mel = AudioDataset.preproc_file(file_path)
+
+    input_tensor = log_mel.unsqueeze(0)
+
+    with torch.no_grad():
+        output = model(input_tensor)
+        predicted_idx = torch.argmax(output, dim=1).item()
+        predicted_label = labels[predicted_idx]
 
     return jsonify({'prediction': predicted_label})
 

@@ -4,6 +4,17 @@ import torchaudio
 from torch.utils.data import Dataset
 
 class AudioDataset(Dataset):
+    target_sr = 16000
+    min_samples = int(0.96 * target_sr)
+    mel = torchaudio.transforms.MelSpectrogram(
+        sample_rate=target_sr,
+        n_fft=400,
+        hop_length=160,
+        n_mels=64,
+        f_min=125,
+        f_max=7500
+    )
+    
     def __init__(self, folder):
         self.files = []
         self.labels = []
@@ -15,35 +26,35 @@ class AudioDataset(Dataset):
                         self.files.append(os.path.join(class_folder, file))
                         self.labels.append(int(label) - 1)
 
-        self.target_sr = 16000
-        self.min_samples = int(0.96 * self.target_sr)
-
-        self.mel = torchaudio.transforms.MelSpectrogram(
-            sample_rate=self.target_sr,
-            n_fft=400,
-            hop_length=160,
-            n_mels=64,
-            f_min=125,
-            f_max=7500
-        )
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, idx):
-        audio, sr = torchaudio.load(self.files[idx])
-        if sr != self.target_sr:
-            resample = torchaudio.transforms.Resample(sr, self.target_sr)
+        file = self.files[idx]
+        log_mel = AudioDataset.preproc_file(file)
+        return log_mel, self.labels[idx]
+
+    @staticmethod
+    def preproc_file(file):
+        audio, sr = torchaudio.load(file)
+        return AudioDataset.preproc_audio_data(audio, sr)
+
+
+    @staticmethod
+    def preproc_audio_data(audio, sr):
+        if sr != AudioDataset.target_sr:
+            resample = torchaudio.transforms.Resample(sr, AudioDataset.target_sr)
             audio = resample(audio)
         audio = audio.mean(dim=0, keepdim=True)
 
-        if audio.shape[1] < self.min_samples:
-            pad = self.min_samples - audio.shape[1]
+        if audio.shape[1] < AudioDataset.min_samples:
+            pad = AudioDataset.min_samples - audio.shape[1]
             audio = torch.nn.functional.pad(audio, (0, pad))
         else:
-            audio = audio[:, :self.min_samples]
+            audio = audio[:, :AudioDataset.min_samples]
 
-        mel_spec = self.mel(audio)
+        mel_spec = AudioDataset.mel(audio)
         log_mel = torch.log(mel_spec + 1e-6)
 
         if log_mel.shape[2] < 96:
@@ -52,4 +63,5 @@ class AudioDataset(Dataset):
         else:
             log_mel = log_mel[:, :, :96]
 
-        return log_mel.transpose(1, 2), self.labels[idx]
+        log_mel = log_mel.transpose(1, 2)
+        return log_mel
