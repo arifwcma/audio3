@@ -2,6 +2,11 @@
 <html>
 <head>
     <title>Audio Classifier</title>
+    <style>
+        ul { list-style-type: none; padding-left: 0; }
+        li { margin-bottom: 10px; }
+        h5 { margin-top: 15px; margin-bottom: 5px; }
+    </style>
 </head>
 <body>
     <h2>Upload an Audio File</h2>
@@ -17,55 +22,50 @@
     </div>
 
     <hr>
-    <h2>Long Files</h2>
-    {% for cls, files in long_files.items() %}
-    <h3>Class {{ cls }}</h3>
-    <table border="1">
-        <tr><th>Actual Class</th><th>Play</th><th>Predicted Class</th></tr>
-        {% for file in files %}
-        <tr>
-            <td>{{ cls }}</td>
-            <td>
+    <h2>Test Files</h2>
+
+    <h3>Long Files</h3>
+    {% for cls in long_files.keys()|map('int')|sort %}
+        {% set files = long_files[cls|string] %}
+        <h5>{{ labels[cls - 1] }}</h5>
+        <ul>
+            {% for file in files %}
+            <li>
                 <audio controls src="/audio/{{ file }}"></audio>
-            </td>
-            <td>
                 <button onclick="predictFile('{{ file }}', this)">Predict</button>
                 <span style="margin-left: 10px;"></span>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+            </li>
+            {% endfor %}
+        </ul>
     {% endfor %}
 
-    <hr>
-    <h2>Short Files</h2>
-    {% for cls, files in short_files.items() %}
-    <h3>Class {{ cls }}</h3>
-    <table border="1">
-        <tr><th>Actual Class</th><th>Play</th><th>Predicted Class</th></tr>
-        {% for file in files %}
-        <tr>
-            <td>{{ cls }}</td>
-            <td>
+    <h3>Short Files</h3>
+    {% for cls in short_files.keys()|map('int')|sort %}
+        {% set files = short_files[cls|string] %}
+        <h5>{{ labels[cls - 1] }}</h5>
+        <ul>
+            {% for file in files %}
+            <li>
                 <audio controls src="/audio/{{ file }}"></audio>
-            </td>
-            <td>
                 <button onclick="predictFile('{{ file }}', this)">Predict</button>
                 <span style="margin-left: 10px;"></span>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+            </li>
+            {% endfor %}
+        </ul>
     {% endfor %}
 
     <script>
         function uploadFile() {
             const fileInput = document.getElementById('fileInput');
+            const result = document.getElementById('result');
             const file = fileInput.files[0];
+
             if (!file) {
                 alert("Please select a file.");
                 return;
             }
+
+            result.innerText = 'Working. Wait ...';
 
             const formData = new FormData();
             formData.append('file', file);
@@ -76,15 +76,19 @@
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('result').innerText = 'Prediction: ' + data.prediction;
+                result.innerText = 'Prediction: ' + data.prediction;
             })
             .catch(err => {
                 console.error(err);
-                document.getElementById('result').innerText = 'Error during prediction.';
+                result.innerText = 'Error during prediction.';
             });
         }
 
+
         function predictFile(filePath, button) {
+            const span = button.nextElementSibling;
+            span.innerText = 'Working. Wait ...';
+
             fetch(`/audio/${filePath}`)
                 .then(res => res.blob())
                 .then(blob => {
@@ -97,10 +101,10 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    button.nextElementSibling.innerText = data.prediction;
+                    span.innerText = data.prediction;
                 })
                 .catch(() => {
-                    button.nextElementSibling.innerText = 'Error';
+                    span.innerText = 'Error';
                 });
         }
     </script>
